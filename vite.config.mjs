@@ -19,7 +19,6 @@ function studioAssets() {
       order: 'pre',
       handler(html) {
         return html
-          .replace('Локальный режим</div>', 'Обработка в браузере</div>')
           .replace(/\s*<link rel="stylesheet" href="\/style\.css">/, '')
           .replace(/\s*<script src="\/(?:badges|app|lifecycle)\.js" defer><\/script>/g, '')
           .replace('</head>', [
