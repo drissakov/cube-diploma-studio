@@ -67,6 +67,7 @@ function setError(message = '') {
 }
 
 async function api(path, body, options = {}) {
+  if (window.cubeStudioBrowser) return window.cubeStudioBrowser.api(path, body, options);
   const response = await fetch(path, {
     method: body === undefined ? 'GET' : 'POST',
     headers: body === undefined ? {} : {'Content-Type': 'application/json'},
@@ -307,7 +308,7 @@ async function loadCsv(file, column) {
   renderPageInfo();
   try {
     const source = file
-      ? {file: (await asDataUrl(file)).split(',')[1], filename: file.name}
+      ? {file: window.cubeStudioBrowser ? file : (await asDataUrl(file)).split(',')[1], filename: file.name}
       : currentCsv;
     if (version !== importVersion) return;
     currentCsv = source;
@@ -616,6 +617,10 @@ function bindControls() {
   document.addEventListener('visibilitychange', () => { if (document.hidden) void saveDraft(); });
   window.addEventListener('pagehide', () => {
     if (draftVersion !== savedVersion) {
+      if (window.cubeStudioBrowser) {
+        window.cubeStudioBrowser.flushDraft(state);
+        return;
+      }
       const blob = new Blob([JSON.stringify(state)], {type:'application/json'});
       if (blob.size < 64000) navigator.sendBeacon('/api/draft', blob);
     }
@@ -635,11 +640,12 @@ async function start() {
     renderWinners();
     renderParticipants();
     renderPageInfo();
-    markSaved(boot.draft ? 'Настройки сохранены' : 'Настройки сохраняются на этом компьютере', Boolean(boot.draft));
+    markSaved(boot.draft ? 'Настройки сохранены' :
+      (window.cubeStudioBrowser ? 'Черновик сохраняется в этом браузере' : 'Настройки сохраняются на этом компьютере'), Boolean(boot.draft));
     requestPreview();
   } catch (error) {
-    setError('Не удалось открыть редактор. ' + error.message + ' Обновите страницу после запуска приложения.');
-    hidePreview('Нет связи с приложением');
+    setError('Не удалось открыть редактор. ' + error.message);
+    hidePreview('Редактор недоступен');
   }
 }
 

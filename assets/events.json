@@ -1,0 +1,19 @@
+[
+  {"id": "333", "name": "3x3x3 Cube", "label": "Куб 3×3×3"},
+  {"id": "222", "name": "2x2x2 Cube", "label": "Куб 2×2×2"},
+  {"id": "444", "name": "4x4x4 Cube", "label": "Куб 4×4×4"},
+  {"id": "555", "name": "5x5x5 Cube", "label": "Куб 5×5×5"},
+  {"id": "666", "name": "6x6x6 Cube", "label": "Куб 6×6×6"},
+  {"id": "777", "name": "7x7x7 Cube", "label": "Куб 7×7×7"},
+  {"id": "333bf", "name": "3x3x3 Blindfolded", "label": "3×3×3 вслепую"},
+  {"id": "333fm", "name": "3x3x3 Fewest Moves", "label": "3×3×3 на количество ходов"},
+  {"id": "333oh", "name": "3x3x3 One-Handed", "label": "3×3×3 одной рукой"},
+  {"id": "clock", "name": "Clock", "label": "Клок"},
+  {"id": "minx", "name": "Megaminx", "label": "Мегаминкс"},
+  {"id": "pyram", "name": "Pyraminx", "label": "Пираминкс"},
+  {"id": "skewb", "name": "Skewb", "label": "Скьюб"},
+  {"id": "sq1", "name": "Square-1", "label": "Скваер-1"},
+  {"id": "444bf", "name": "4x4x4 Blindfolded", "label": "4×4×4 вслепую"},
+  {"id": "555bf", "name": "5x5x5 Blindfolded", "label": "5×5×5 вслепую"},
+  {"id": "333mbf", "name": "3x3x3 Multi-Blind", "label": "Мультиблайнд 3×3×3"}
+]

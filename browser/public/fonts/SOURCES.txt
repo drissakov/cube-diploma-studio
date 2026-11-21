@@ -1,0 +1,33 @@
+CubeDiploma Studio — PDF typefaces
+
+These fonts are served with the application. Supplementary scripts load when
+the document contains them. PDF export embeds the fonts for consistent printing.
+
+body.ttf — Carlito Bold. Original, unmodified font.
+https://github.com/google/fonts/tree/main/ofl/carlito
+License: Carlito-OFL.txt
+
+title.ttf — Oswald, static instance at weight 700.
+https://github.com/google/fonts/tree/main/ofl/oswald
+License: Oswald-OFL.txt
+
+badge.ttf — Noto Sans, static instance at weight 900 and width 100.
+https://github.com/google/fonts/tree/main/ofl/notosans
+License: NotoSans-OFL.txt
+
+korean.ttf — Nanum Gothic Bold. Original, unmodified font.
+https://github.com/google/fonts/tree/main/ofl/nanumgothic
+License: NanumGothic-OFL.txt
+
+devanagari.ttf — Noto Sans Devanagari, static instance at weight 700 and width 100.
+https://github.com/google/fonts/tree/main/ofl/notosansdevanagari
+License: NotoSansDevanagari-OFL.txt
+
+thai.ttf — Noto Sans Thai, static instance at weight 700 and width 100.
+https://github.com/google/fonts/tree/main/ofl/notosansthai
+License: NotoSansThai-OFL.txt
+
+cjk.ttf, arabic.ttf, hebrew.ttf — Droid Sans Fallback Full, Droid Naskh Regular,
+and Droid Sans Hebrew Bold, respectively. Original, unmodified fonts.
+https://github.com/aosp-mirror/platform_frameworks_base/tree/android-4.4.4_r2/data/fonts
+License: Droid-NOTICE.txt

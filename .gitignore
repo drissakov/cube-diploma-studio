@@ -6,3 +6,9 @@ __pycache__/
 /draft*.json
 /session.json
 /application.log
+node_modules/
+/dist-web/
+.wrangler/
+.dev.vars*
+.env
+.env.*
