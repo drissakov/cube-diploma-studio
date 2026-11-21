@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f6f9">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%233c54d0' rx='11'/%3E%3Cpath d='M24 8 38 16v16l-14 8-14-8V16z M10 16l14 8 14-8 M24 24v16' fill='none' stroke='white' stroke-width='2.6' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+  <title>Студия дипломов</title>
+  <script src="/badges.js" defer></script>
+  <script src="/app.js" defer></script>
+  <script src="/lifecycle.js" defer></script>
+</head>
+<body>
+  <svg aria-hidden="true" class="icon-library" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="m12 2.5 8.5 4.7v9.6L12 21.5l-8.5-4.7V7.2z M3.5 7.2 12 12l8.5-4.8 M12 12v9.5"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="7.6" r="3.3"/><path d="M5 20v-1.8a7 7 0 0 1 14 0V20"/></symbol>
+    <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="7.6" r="3.1"/><path d="M2.8 20v-1.8a6.2 6.2 0 0 1 12.4 0V20 M16 4.7a3.1 3.1 0 0 1 0 5.9 M17 13a5.4 5.4 0 0 1 4.2 5.3V20"/></symbol>
+    <symbol id="i-medal" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="m8.5 13.5-2 7 5.5-2.8 5.5 2.8-2-7"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12 M7.5 10.5l4.5 4.5 4.5-4.5 M4.5 15.5v4h15v-4"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4 M7.5 8.5 12 4l4.5 4.5 M4.5 15.5v4h15v-4"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6h5m5 0h6M4 12h10m5 0h1M4 18h2m5 0h9"/><circle cx="11.5" cy="6" r="2.5"/><circle cx="16.5" cy="12" r="2.5"/><circle cx="8.5" cy="18" r="2.5"/></symbol>
+    <symbol id="i-sign" viewBox="0 0 24 24"><path d="m4 16 1.7-5.3L15.9 2.9a1.8 1.8 0 0 1 2.6.4l1 1.3a1.8 1.8 0 0 1-.4 2.6L8.7 15.1z M13.5 5l3.2 4 M3 20c4-2.7 6.5-3.8 7.7-1.7 1.2 2 2.7 1.8 5-.1 1.4-1.1 2.5.9 4.5.4"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m14.5 5-7 7 7 7"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="m9.5 5 7 7-7 7"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M14.5 4H20v5.5M20 4l-6.5 6.5 M9.5 20H4v-5.5M4 20l6.5-6.5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M5 3.5h9l5 5v12H5z M14 3.5v5h5 M8.5 13h7 M8.5 16.5H14"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4.5 12.5 5 5 10-11"/></symbol>
+    <symbol id="i-desktop" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 20h8m-4-3v3"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.6 12s3.7-6.7 9.4-6.7 9.4 6.7 9.4 6.7-3.7 6.7-9.4 6.7S2.6 12 2.6 12z"/><circle cx="12" cy="12" r="2.6"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="m5 18 5.5-6 4 4 2-2 3.5 3.7"/><circle cx="15.5" cy="9.2" r="1"/></symbol>
+    <symbol id="i-badge" viewBox="0 0 24 24"><path d="M9 5H5.5a1 1 0 0 0-1 1v14h15V6a1 1 0 0 0-1-1H15"/><rect x="9" y="2.5" width="6" height="4.5" rx="1"/><circle cx="12" cy="11" r="2"/><path d="M8 17c.5-3.4 7.5-3.4 8 0"/></symbol>
+  </svg>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div class="brand"><span class="brand-mark"><svg class="ico"><use href="#i-cube"/></svg></span>Студия дипломов</div>
+      <div class="local-indicator"><svg class="ico"><use href="#i-desktop"/></svg>Локальный режим</div>
+    </div>
+  </header>
+  <main class="shell">
+    <div class="page-heading">
+      <div><h1>Редактор дипломов</h1>
+        <div class="mode-switch" role="group" aria-label="Тип документа">
+          <button type="button" class="mode" data-mode="participation" aria-pressed="true"><svg class="ico"><use href="#i-people"/></svg>Участие</button>
+          <button type="button" class="mode" data-mode="awards" aria-pressed="false"><svg class="ico"><use href="#i-medal"/></svg>Призовые места</button>
+          <button type="button" class="mode" data-mode="badges" aria-pressed="false"><svg class="ico"><use href="#i-badge"/></svg>Бейджи</button>
+        </div>
+      </div>
+      <div class="export-block">
+        <button type="button" class="primary" id="export" disabled><svg class="ico"><use href="#i-download"/></svg><span>Скачать PDF</span></button>
+        <span id="export-count" class="small muted"></span>
+      </div>
+    </div>
+    <div id="global-error" class="alert" role="alert" hidden></div>
+    <div class="workspace">
+      <div class="settings">
+        <details open class="panel">
+          <summary><span class="summary-title"><svg class="ico"><use href="#i-settings"/></svg>Соревнование</span><svg class="ico chevron"><use href="#i-down"/></svg></summary>
+          <div class="panel-body fields">
+            <label>Название<input id="title" type="text" autocomplete="off" placeholder="Название соревнования"></label>
+            <label>Дата соревнования<input id="date" type="text" autocomplete="off" placeholder="Например, April 26"></label>
+          </div>
+        </details>
+        <details open class="panel" id="participant-panel">
+          <summary><span class="summary-title"><svg class="ico"><use href="#i-people"/></svg>Участники</span><svg class="ico chevron"><use href="#i-down"/></svg></summary>
+          <div class="panel-body">
+            <button type="button" id="csv-drop" class="drop-target csv-drop">
+              <span class="upload-disc"><svg class="ico"><use href="#i-upload"/></svg></span>
+              <span class="drop-title" id="csv-title">Загрузить CSV</span>
+              <span class="drop-subtitle" id="csv-description">Выберите файл или перетащите его сюда</span>
+            </button>
+            <input id="csv-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values" hidden>
+            <label id="column-wrap" class="column-select" hidden>Столбец с именами<select id="csv-column"></select></label>
+            <p id="csv-notice" class="csv-notice" role="status" hidden></p>
+            <button type="button" class="text-button cancel-import" id="cancel-import" hidden>Отменить импорт</button>
+            <div class="participant-line"><span id="names-count" class="small muted">Список пуст</span><button type="button" class="text-button" id="edit-names">Ввести имена</button></div>
+          </div>
+        </details>
+        <details open class="panel" id="badge-print-panel" hidden>
+          <summary><span class="summary-title"><svg class="ico"><use href="#i-badge"/></svg>Параметры бейджа</span><svg class="ico chevron"><use href="#i-down"/></svg></summary>
+          <div class="panel-body fields">
+            <div class="measure-pair">
+              <label>Ширина, мм<input id="badge-width" type="number" min="1" max="297" step="0.01" inputmode="decimal"></label>
+              <label>Высота, мм<input id="badge-height" type="number" min="1" max="297" step="0.01" inputmode="decimal"></label>
+            </div>
+            <label>Ссылка для QR-кода<input id="badge-url" type="text" inputmode="url" spellcheck="false" autocomplete="off" placeholder="https://…" aria-describedby="badge-url-hint"></label>
+            <span id="badge-url-hint" class="small muted field-note">Одна ссылка для всех бейджей. Можно оставить пустой.</span>
+            <details class="print-options"><summary>Настроить поля и зазор<svg class="ico chevron"><use href="#i-down"/></svg></summary>
+              <div class="measure-pair">
+                <label>Поля листа, мм<input id="badge-margin" type="number" min="0" step="0.01" inputmode="decimal"></label>
+                <label>Зазор, мм<input id="badge-gap" type="number" min="0" step="0.01" inputmode="decimal"></label>
+              </div>
+            </details>
+            <p id="badge-layout-info" class="small" role="status"></p>
+          </div>
+        </details>
+        <details open class="panel" id="event-panel" hidden>
+          <summary><span class="summary-title"><svg class="ico"><use href="#i-cube"/></svg>Дисциплины WCA</span><svg class="ico chevron"><use href="#i-down"/></svg></summary>
+          <div class="panel-body"><div class="event-tools"><span id="event-count" class="small muted"></span><button type="button" id="toggle-events" class="text-button">Выбрать все</button></div>
+            <div id="event-list" class="event-list"></div>
+          </div>
+        </details>
+        <details class="panel" id="winners-panel" hidden>
+          <summary><span class="summary-title"><svg class="ico"><use href="#i-medal"/></svg>Призёры и результаты</span><svg class="ico chevron"><use href="#i-down"/></svg></summary>
+          <div class="panel-body"><p class="hint">Пустые строки можно заполнить после печати.</p><div id="winner-list"></div></div>
+        </details>
+        <details class="panel" id="organizer-panel">
+          <summary><span class="summary-title"><svg class="ico"><use href="#i-sign"/></svg>Организаторы и подписи</span><svg class="ico chevron"><use href="#i-down"/></svg></summary>
+          <div class="panel-body"><div id="organizers"></div><button type="button" id="add-organizer" class="secondary add"><svg class="ico"><use href="#i-plus"/></svg>Добавить подписанта</button></div>
+        </details>
+        <div class="save-status" id="save-status" role="status"></div>
+      </div>
+      <section class="panel roster-panel" id="badge-roster" hidden aria-labelledby="badge-roster-title">
+        <div class="roster-heading"><h2 id="badge-roster-title" tabindex="-1">Список для бейджей</h2><span id="badge-roster-count" class="count-pill"></span></div>
+        <div class="roster-body">
+          <input id="badge-search" type="search" placeholder="Найти по имени" aria-label="Найти человека по имени" autocomplete="off">
+          <div id="badge-column-titles" class="badge-column-titles"><span>Имя на бейдже</span><span>Статус</span></div>
+          <div id="badge-list" class="badge-list"></div>
+          <p id="badge-empty" class="roster-empty"></p>
+          <form id="badge-new" class="badge-new">
+            <label for="badge-new-name">Добавить человека</label>
+            <div class="badge-entry"><input id="badge-new-name" type="text" placeholder="Имя и фамилия" aria-label="Имя нового человека" autocomplete="off" required><select id="badge-new-role" class="badge-status" aria-label="Статус нового человека"></select></div>
+            <button type="submit" id="badge-add" class="secondary add"><svg class="ico"><use href="#i-plus"/></svg>Добавить в список</button>
+          </form>
+        </div>
+      </section>
+      <section class="preview-panel panel" aria-labelledby="preview-title">
+        <div class="preview-heading">
+          <div><div class="preview-eyebrow"><span></span>Предпросмотр</div><h2 id="preview-title">Сертификат участника</h2></div>
+          <button id="expand" class="icon-button" type="button" title="Увеличить предпросмотр" aria-label="Увеличить предпросмотр" disabled><svg class="ico"><use href="#i-expand"/></svg></button>
+        </div>
+        <div class="preview-stage">
+          <img id="preview-img" class="paper" alt="Предпросмотр выбранной страницы" hidden>
+          <div id="preview-placeholder" class="preview-placeholder" role="status">Загружаем предпросмотр…</div>
+          <span class="preview-progress" id="preview-progress" hidden>Обновление…</span>
+        </div>
+        <div class="preview-footer">
+          <div class="page-info"><span class="file-icon"><svg class="ico"><use href="#i-file"/></svg></span><div><strong id="page-context">Шаблон</strong><span id="page-detail" class="small muted">Альбомный формат</span></div></div>
+          <div class="pager"><button type="button" class="icon-button" id="prev" aria-label="Предыдущая страница" title="Предыдущая страница" disabled><svg class="ico"><use href="#i-left"/></svg></button>
+            <label class="page-index"><input id="page" type="number" min="1" value="1" aria-label="Номер страницы"><span aria-hidden="true">/</span><span id="page-total">1</span></label>
+            <button type="button" class="icon-button" id="next" aria-label="Следующая страница" title="Следующая страница" disabled><svg class="ico"><use href="#i-right"/></svg></button>
+          </div>
+        </div>
+        <p id="preview-error" class="inline-error" role="alert" hidden></p>
+      </section>
+    </div>
+  </main>
+  <dialog id="names-dialog" aria-labelledby="names-dialog-title">
+    <div class="dialog-heading"><h2 id="names-dialog-title">Имена участников</h2><button type="button" class="icon-button" data-close="names-dialog" aria-label="Закрыть"><svg class="ico"><use href="#i-close"/></svg></button></div>
+    <div class="dialog-body"><label>По одному имени на строке<textarea id="names-text" rows="12" spellcheck="false" placeholder="Имя Фамилия"></textarea></label></div>
+    <div class="dialog-actions"><button type="button" class="secondary" data-close="names-dialog">Отмена</button><button type="button" class="primary" id="apply-names">Применить</button></div>
+  </dialog>
+  <dialog id="zoom-dialog" aria-labelledby="zoom-title"><div class="dialog-heading"><h2 id="zoom-title">Предпросмотр</h2><button type="button" class="icon-button" data-close="zoom-dialog" aria-label="Закрыть"><svg class="ico"><use href="#i-close"/></svg></button></div><div class="zoom-stage"><img id="zoom-img" alt="Увеличенная страница диплома"></div></dialog>
+</body>
+</html>
