@@ -11,11 +11,11 @@ const span = (text, color = ink) => ({ text, color });
 
 function pagesFor(state, preview) {
   let pages;
-  if (state.mode === 'participation') {
+  if (state.mode === 'participation' || state.mode === 'volunteers') {
     pages = (state.names || []).map((name) => ({ name: clean(name) }));
     if (!pages.length && preview) pages.push({ name: '' });
-    if (!pages.length) throw new Error('Загрузите CSV со списком участников.');
-    if (!preview && pages.some((page) => !page.name)) throw new Error('В списке есть пустое имя участника.');
+    if (!pages.length) throw new Error('Добавьте имена в список или загрузите CSV.');
+    if (!preview && pages.some((page) => !page.name)) throw new Error('В списке есть пустое имя.');
   } else if (state.mode === 'awards') {
     const ids = [...new Set(state.events || [])];
     if (!ids.length && preview) ids.push('333');
@@ -186,7 +186,7 @@ export async function certificatePdf(state, preview = false) {
   }
   const pages = pagesFor(state, preview);
   const podium = state.mode === 'awards';
-  const kind = podium ? 'podium' : 'participation';
+  const kind = { awards: 'podium', volunteers: 'volunteer', participation: 'participation' }[state.mode];
   const contents = [title, date, ...organizers.map((p) => p.name), ...pages.flatMap((p) => [p.name, p.event || '', p.result || ''])];
   const doc = await PDFDocument.create();
   doc.setTitle(title);
@@ -220,6 +220,8 @@ export async function certificatePdf(state, preview = false) {
         span(' in ' + recipe.event + ' with the result of')]];
       paragraph(page, fonts, composeParagraph(fonts, line, 718, 44, 21, 1.11), 48.6, height - 318);
       fonts.drawLine(page, recipe.result, 292, height - 389.5, 467, 27, { center: true });
+    } else if (kind === 'volunteer') {
+      fonts.drawLine(page, 'has volunteered at this competition', 50.5, height - 374.6, 540, 22);
     }
   }
   return doc.save();

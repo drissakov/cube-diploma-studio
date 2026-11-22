@@ -5,6 +5,7 @@ import { defineConfig } from 'vite';
 const resolve = (path) => fileURLToPath(new URL(path, import.meta.url));
 const templates = new Map([
   ['participation.pdf', 'application/pdf'],
+  ['volunteer.pdf', 'application/pdf'],
   ['podium.pdf', 'application/pdf'],
   ['badge-logo.png', 'image/png'],
   ['badge-cubes.png', 'image/png'],

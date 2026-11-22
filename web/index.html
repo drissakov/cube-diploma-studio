@@ -33,6 +33,7 @@
     <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.6 12s3.7-6.7 9.4-6.7 9.4 6.7 9.4 6.7-3.7 6.7-9.4 6.7S2.6 12 2.6 12z"/><circle cx="12" cy="12" r="2.6"/></symbol>
     <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="m5 18 5.5-6 4 4 2-2 3.5 3.7"/><circle cx="15.5" cy="9.2" r="1"/></symbol>
     <symbol id="i-badge" viewBox="0 0 24 24"><path d="M9 5H5.5a1 1 0 0 0-1 1v14h15V6a1 1 0 0 0-1-1H15"/><rect x="9" y="2.5" width="6" height="4.5" rx="1"/><circle cx="12" cy="11" r="2"/><path d="M8 17c.5-3.4 7.5-3.4 8 0"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.3 4.7a5.3 5.3 0 0 0-7.5 0l-.8.9-.8-.9a5.3 5.3 0 0 0-7.5 7.5L12 20.5l8.3-8.3a5.3 5.3 0 0 0 0-7.5z"/></symbol>
   </svg>
   <header class="masthead">
     <div class="masthead-inner">
@@ -46,6 +47,7 @@
         <div class="mode-switch" role="group" aria-label="Тип документа">
           <button type="button" class="mode" data-mode="participation" aria-pressed="true"><svg class="ico"><use href="#i-people"/></svg>Участие</button>
           <button type="button" class="mode" data-mode="awards" aria-pressed="false"><svg class="ico"><use href="#i-medal"/></svg>Призовые места</button>
+          <button type="button" class="mode" data-mode="volunteers" aria-pressed="false"><svg class="ico"><use href="#i-heart"/></svg>Волонтёры</button>
           <button type="button" class="mode" data-mode="badges" aria-pressed="false"><svg class="ico"><use href="#i-badge"/></svg>Бейджи</button>
         </div>
       </div>
@@ -65,7 +67,7 @@
           </div>
         </details>
         <details open class="panel" id="participant-panel">
-          <summary><span class="summary-title"><svg class="ico"><use href="#i-people"/></svg>Участники</span><svg class="ico chevron"><use href="#i-down"/></svg></summary>
+          <summary><span class="summary-title"><svg class="ico"><use href="#i-people"/></svg><span id="roster-title">Участники</span></span><svg class="ico chevron"><use href="#i-down"/></svg></summary>
           <div class="panel-body">
             <button type="button" id="csv-drop" class="drop-target csv-drop">
               <span class="upload-disc"><svg class="ico"><use href="#i-upload"/></svg></span>
@@ -77,6 +79,7 @@
             <p id="csv-notice" class="csv-notice" role="status" hidden></p>
             <button type="button" class="text-button cancel-import" id="cancel-import" hidden>Отменить импорт</button>
             <div class="participant-line"><span id="names-count" class="small muted">Список пуст</span><button type="button" class="text-button" id="edit-names">Ввести имена</button></div>
+            <button type="button" class="secondary add" id="use-badge-volunteers" hidden><svg class="ico"><use href="#i-plus"/></svg><span>Добавить волонтёров из бейджей</span></button>
           </div>
         </details>
         <details open class="panel" id="badge-print-panel" hidden>

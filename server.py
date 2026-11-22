@@ -32,7 +32,7 @@ from registrations import inspect_registration_csv
 
 
 APP_DIR = Path(__file__).resolve().parent
-STUDIO_VERSION = "2.0"
+STUDIO_VERSION = "2.1"
 BADGE_DIMENSIONS = {"badgeWidth": 75, "badgeHeight": 100, "badgeMargin": 5, "badgeGap": 0}
 DEFAULTS = {
     "title": "Haileybury Astana Open 2026",
@@ -142,17 +142,19 @@ def prepare_document(data, preview):
         organizers.append({"name": name, "role": person["role"], "signature": signature})
     settings["organizers"] = organizers
     mode = data.get("mode")
-    if mode == "participation":
+    if mode in ("participation", "volunteers"):
+        kind = "volunteer" if mode == "volunteers" else "participation"
+        roster = "волонтёров" if mode == "volunteers" else "участников"
         names = data.get("names", [])
         if not isinstance(names, list):
-            raise ValueError("Импортируйте список участников.")
-        pages = [{"kind": "participation", "name": short_text(name)} for name in names]
+            raise ValueError(f"Проверьте список {roster}.")
+        pages = [{"kind": kind, "name": short_text(name)} for name in names]
         if any(not page["name"] for page in pages):
-            raise ValueError("В списке есть пустое имя участника.")
+            raise ValueError(f"В списке {roster} есть пустое имя.")
         if not pages:
             if not preview:
-                raise ValueError("Загрузите CSV со списком участников.")
-            pages = [{"kind": "participation", "name": ""}]
+                raise ValueError(f"Добавьте имена {roster} вручную или загрузите CSV.")
+            pages = [{"kind": kind, "name": ""}]
     elif mode == "awards":
         ids = data.get("events", [])
         if not isinstance(ids, list) or any(not isinstance(key, str) or key not in EVENTS for key in ids):
@@ -418,8 +420,9 @@ class EditorHandler(BaseHTTPRequestHandler):
         elif self.path == "/api/preview":
             self.reply(200, make_document(payload, True), "image/png")
         elif self.path == "/api/export":
-            filename = "badges.pdf" if payload.get("mode") == "badges" else "certificates.pdf"
-            self.reply(200, make_document(payload, False), "application/pdf",
+            document = make_document(payload, False)
+            filename = {"badges": "badges.pdf", "volunteers": "volunteers.pdf"}.get(payload.get("mode"), "certificates.pdf")
+            self.reply(200, document, "application/pdf",
                        (("Content-Disposition", f'attachment; filename="{filename}"'),))
         else:
             self.json_reply({"error": "Неизвестная операция."}, 404)

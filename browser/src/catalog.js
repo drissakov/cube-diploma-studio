@@ -1,4 +1,4 @@
-import catalog from '../../assets/events.json';
+import catalog from '../../assets/events.json' with { type: 'json' };
 
 export const events = catalog;
 export const defaults = {

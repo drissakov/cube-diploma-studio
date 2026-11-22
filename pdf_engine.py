@@ -24,7 +24,7 @@ from reportlab.platypus import Paragraph
 
 
 ASSET_DIR = Path(__file__).resolve().parent / "assets"
-PAGE_SIZES = {"participation": (841.89, 595.276), "podium": (841.92, 595.32)}
+PAGE_SIZES = {"participation": (841.89, 595.276), "volunteer": (841.89, 595.276), "podium": (841.92, 595.32)}
 INK = "#231F20"
 GREENS = ("#009B53", "#3EA94F", "#00A258")
 PLACE_STYLES = {1: ("1st", "#8A6511"), 2: ("2nd", "#526474"), 3: ("3rd", "#93532C")}
@@ -277,10 +277,12 @@ def _build_pdf(settings, pages):
         height = size[1]
         _draw_shared(c, height, title, date, organizers, intro, kind)
         name = _clean(page.get("name"))
-        baseline = 315 if kind == "participation" else 302
+        baseline = 302 if kind == "podium" else 315
         _line(c, name, 410, height - baseline, 700, 31, center=True)
         if kind == "podium":
             _draw_podium(c, page, height)
+        elif kind == "volunteer":
+            _line(c, "has volunteered at this competition", 50.5, height - 374.6, 540, 22)
         c.showPage()
     c.save()
 

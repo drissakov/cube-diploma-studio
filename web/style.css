@@ -100,6 +100,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent) }
 .signature-target .ico { width: 15px; height: 15px }
 .signature-target img { max-width: 75px; height: 24px; object-fit: contain }
 .add { width: 100%; padding: 7px }
+#use-badge-volunteers { margin-top: 12px }
+#use-badge-volunteers:disabled { color: var(--quiet); background: var(--soft) }
 .add .ico { width: 15px; height: 15px }
 .save-status { padding: 1px 4px; color: var(--quiet); font-size: 11px; display: flex; align-items: center; gap: 6px; min-height: 18px }
 .save-status .ico { width: 14px; height: 14px; color: #387057 }
@@ -151,7 +153,7 @@ dialog::backdrop { background: #232a3e77 }
 }
 @media (max-width: 730px) {
   .shell { padding-top: 20px }
-  .page-heading { margin-bottom: 16px; align-items: flex-end }
+  .page-heading { margin-bottom: 16px; align-items: flex-end; flex-wrap: wrap }
   .workspace { grid-template-columns: minmax(0,1fr) }
   .preview-panel { position: static }
   .settings { gap: 8px }
@@ -168,6 +170,8 @@ dialog::backdrop { background: #232a3e77 }
   .brand { font-size: 15px }
   .local-indicator .ico { display: none }
   .page-heading { flex-wrap: wrap; gap: 12px }
+  .page-heading > :first-child { width: 100% }
+  .mode-switch { display: grid; grid-template-columns: repeat(2, 1fr) }
   .primary, .mode { padding-inline: 10px }
   h1 { margin-bottom: 11px }
   .export-block { align-items: flex-start }

@@ -6,11 +6,11 @@ const svgNS = 'http://www.w3.org/2000/svg';
 let state;
 let ready = false;
 let exporting = false;
-let currentCsv = null;
-let importVersion = 0;
-let importing = false;
-let csvNeedsReview = false;
-let csvNotice = '';
+function csvSession(namesKey, filenameKey, columnKey) {
+  return {namesKey, filenameKey, columnKey, source: null, version: 0, importing: false, needsReview: false, notice: ''};
+}
+const registrationCsv = csvSession('names', 'csvFilename', 'csvColumn');
+const volunteerCsv = csvSession('volunteerNames', 'volunteerCsvFilename', 'volunteerCsvColumn');
 const pendingSignatures = new Map();
 let previewVersion = 0;
 let previewTimer;
@@ -86,13 +86,16 @@ function stateFrom(initial, draft) {
   const merged = Object.assign({}, initial || {}, draft || {});
   const names = Array.isArray(merged.names) ? merged.names.map(String) : [];
   return {
-    mode: ['awards', 'badges'].includes(merged.mode) ? merged.mode : 'participation',
+    mode: ['awards', 'badges', 'volunteers'].includes(merged.mode) ? merged.mode : 'participation',
     title: String(merged.title ?? ''),
     date: String(merged.date ?? ''),
     organizers: (Array.isArray(merged.organizers) ? merged.organizers : []).slice(0, 5).map((o) => ({
       name: String(o.name ?? ''), role: o.role === 'wca' ? 'wca' : 'organizer', signature: o.signature || ''
     })),
     names,
+    volunteerNames: Array.isArray(merged.volunteerNames) ? merged.volunteerNames.map(String) : [],
+    volunteerCsvFilename: String(merged.volunteerCsvFilename ?? ''),
+    volunteerCsvColumn: String(merged.volunteerCsvColumn ?? ''),
     ...badgeState(merged, names),
     events: Array.from(eventMap.keys()).filter((id) => Array.isArray(merged.events) && merged.events.includes(id)),
     winners: merged.winners || {}, results: merged.results || {},
@@ -101,12 +104,23 @@ function stateFrom(initial, draft) {
   };
 }
 
+function activeCsv() {
+  return state.mode === 'volunteers' ? volunteerCsv : registrationCsv;
+}
+
+function updateRoster(csv, names, preserveImportedEdits = true) {
+  if (csv === volunteerCsv) state.volunteerNames = names;
+  else replaceRegistrationNames(names, preserveImportedEdits);
+}
+
 function pageCount() {
   if (state.mode === 'badges') return badgeCapacity ? Math.ceil(state.badgePeople.length / badgeCapacity) : 0;
-  return state.mode === 'awards' ? state.events.length * 3 : state.names.length;
+  return state.mode === 'awards' ? state.events.length * 3 : state[activeCsv().namesKey].length;
 }
 
 function documentPayload() {
+  if (state.mode === 'volunteers') return {mode: state.mode, title: state.title, date: state.date,
+    organizers: state.organizers, names: state.volunteerNames, page: state.page};
   if (state.mode !== 'badges') return state;
   const data = {mode: state.mode, title: state.title, date: state.date, page: state.page,
     badgeUrl: state.badgeUrl, badgePeople: state.badgePeople.map(({name, role}) => ({name, role}))};
@@ -163,9 +177,9 @@ function renderPageInfo() {
     const last = Math.min(first + badgeCapacity - 1, state.badgePeople.length);
     context = total ? (first === last ? 'Бейдж ' + first : 'Бейджи ' + first + '–' + last) : 'Образец бейджа';
     detail = 'A4 · печать 100%';
-  } else if (total && state.mode === 'participation') {
-    context = state.names[state.page];
-    detail = 'Сертификат участника';
+  } else if (total && state.mode !== 'awards') {
+    context = state[activeCsv().namesKey][state.page];
+    detail = state.mode === 'volunteers' ? 'Сертификат волонтёра' : 'Сертификат участника';
   } else if (total) {
     const id = state.events[Math.floor(state.page / 3)];
     const place = state.page % 3;
@@ -174,15 +188,16 @@ function renderPageInfo() {
   }
   $('page-context').textContent = context;
   $('page-detail').textContent = detail;
-  const reviewingCsv = state.mode !== 'awards' && (importing || csvNeedsReview);
+  const csv = activeCsv();
+  const reviewingCsv = state.mode !== 'awards' && (csv.importing || csv.needsReview);
   $('export-count').textContent = total
     ? total + ' ' + plural(total, 'страница', 'страницы', 'страниц') + ' в одном файле'
-    : (state.mode === 'awards' ? 'Выберите дисциплины' : 'Добавьте участников');
+    : ({awards: 'Выберите дисциплины', volunteers: 'Добавьте волонтёров'}[state.mode] || 'Добавьте участников');
   const emptyBadgeName = badges && state.badgePeople.some(person => !person.name.trim());
   if (badges && total) $('export-count').textContent = state.badgePeople.length + ' ' + plural(state.badgePeople.length, 'бейдж', 'бейджа', 'бейджей') + ' · ' + total + ' ' + plural(total, 'лист', 'листа', 'листов') + ' A4';
   if (badges && !badgeCapacity) $('export-count').textContent = 'Проверьте размеры бейджа';
   if (emptyBadgeName) $('export-count').textContent = 'Заполните пустое имя в списке';
-  if (reviewingCsv) $('export-count').textContent = importing ? 'Читаем CSV…' : 'Проверьте импорт участников';
+  if (reviewingCsv) $('export-count').textContent = csv.importing ? 'Читаем CSV…' : 'Проверьте импорт имён';
   const readingSignature = !badges && pendingSignatures.size > 0;
   if (readingSignature) $('export-count').textContent = 'Читаем подпись…';
   $('export').disabled = !ready || exporting || reviewingCsv || readingSignature || emptyBadgeName || !total || !state.title.trim() || !state.date.trim();
@@ -247,17 +262,22 @@ async function loadPreview(version) {
 function renderModes() {
   const awards = state.mode === 'awards';
   const badges = state.mode === 'badges';
+  const volunteers = state.mode === 'volunteers';
   document.body.classList.toggle('badges-mode', badges);
   document.querySelector('h1').textContent = badges ? 'Редактор бейджей' : 'Редактор дипломов';
   document.querySelectorAll('.mode').forEach((node) => node.setAttribute('aria-pressed', String(node.dataset.mode === state.mode)));
   $('participant-panel').hidden = awards;
+  $('roster-title').textContent = volunteers ? 'Волонтёры' : 'Участники';
+  $('names-dialog-title').textContent = volunteers ? 'Имена волонтёров' : 'Имена участников';
+  $('use-badge-volunteers').hidden = !volunteers;
   $('event-panel').hidden = !awards;
   $('winners-panel').hidden = !awards;
   $('organizer-panel').hidden = badges;
   $('badge-print-panel').hidden = !badges;
   $('badge-roster').hidden = !badges;
   $('edit-names').hidden = badges;
-  $('preview-title').textContent = badges ? 'Печатный лист A4' : (awards ? 'Диплом призёра' : 'Сертификат участника');
+  $('preview-title').textContent = {badges: 'Печатный лист A4', awards: 'Диплом призёра',
+    participation: 'Сертификат участника', volunteers: 'Сертификат волонтёра'}[state.mode];
   if (badges) {
     renderBadgeRows();
     invalidateLayout();
@@ -266,25 +286,53 @@ function renderModes() {
 }
 
 function renderParticipants() {
-  const count = state.names.length;
-  const filename = currentCsv?.filename || state.csvFilename;
-  const namesLabel = count ? count + ' ' + plural(count, 'участник', 'участника', 'участников') : 'Список пуст';
-  $('names-count').textContent = csvNeedsReview && count ? 'Сохранено: ' + namesLabel : namesLabel;
-  $('csv-title').textContent = importing ? 'Читаем файл…' : (filename || 'Загрузить CSV');
+  const csv = activeCsv();
+  const count = state[csv.namesKey].length;
+  const filename = csv.source?.filename || state[csv.filenameKey];
+  const volunteers = csv === volunteerCsv;
+  const noun = volunteers ? plural(count, 'волонтёр', 'волонтёра', 'волонтёров') : plural(count, 'участник', 'участника', 'участников');
+  const namesLabel = count ? count + ' ' + noun : 'Список пуст';
+  $('names-count').textContent = csv.needsReview && count ? 'Сохранено: ' + namesLabel : namesLabel;
+  $('csv-title').textContent = csv.importing ? 'Читаем файл…' : (filename || 'Загрузить CSV');
   $('csv-description').textContent = filename ? 'Нажмите, чтобы выбрать другой файл' : 'Выберите файл или перетащите его сюда';
   $('edit-names').textContent = count ? 'Изменить список' : 'Ввести имена';
-  $('csv-notice').hidden = !csvNotice;
-  $('csv-notice').textContent = csvNotice;
-  $('cancel-import').hidden = !csvNeedsReview;
-  const columns = currentCsv?.columns || [];
+  $('csv-notice').hidden = !csv.notice;
+  $('csv-notice').textContent = csv.notice;
+  $('cancel-import').hidden = !csv.needsReview;
+  if (volunteers) {
+    const count = newBadgeVolunteers().length;
+    const add = $('use-badge-volunteers');
+    add.disabled = !count || csv.needsReview;
+    add.querySelector('span').textContent = 'Добавить волонтёров из бейджей' + (count ? ' (' + count + ')' : '');
+    add.title = count ? 'Добавить людей со статусом VOLUNTEER в этот список.' : 'В бейджах нет новых людей со статусом VOLUNTEER.';
+  }
+  const columns = csv.source?.columns || [];
   $('column-wrap').hidden = columns.length < 2;
   const chooser = $('csv-column');
   chooser.replaceChildren();
   if (columns.length) {
     chooser.add(new Option('Выберите столбец', ''));
     columns.forEach((name) => chooser.add(new Option(name, name)));
-    chooser.value = currentCsv.column || '';
+    chooser.value = csv.source.column || '';
   }
+}
+
+function newBadgeVolunteers() {
+  const existing = new Map();
+  for (const name of state.volunteerNames) {
+    const key = name.trim().normalize();
+    existing.set(key, (existing.get(key) || 0) + 1);
+  }
+  const additions = [];
+  for (const person of state.badgePeople) {
+    const name = person.name.trim();
+    if (person.role !== 'VOLUNTEER' || !name) continue;
+    // Two badge holders may share a name. Keep each person's certificate on repeated imports.
+    const key = name.normalize();
+    if (existing.get(key)) existing.set(key, existing.get(key) - 1);
+    else additions.push(name);
+  }
+  return additions;
 }
 
 function asDataUrl(file) {
@@ -297,41 +345,43 @@ function asDataUrl(file) {
 }
 
 async function loadCsv(file, column) {
-  const version = ++importVersion;
-  if (!file && !currentCsv) return;
-  importing = true;
-  csvNeedsReview = true;
-  csvNotice = '';
-  if (file) currentCsv = {filename: file.name, columns: [], column: ''};
+  const csv = activeCsv();
+  const version = ++csv.version;
+  if (!file && !csv.source) return;
+  csv.importing = true;
+  csv.needsReview = true;
+  csv.notice = '';
+  if (file) csv.source = {filename: file.name, columns: [], column: ''};
   setError();
   renderParticipants();
   renderPageInfo();
   try {
     const source = file
       ? {file: window.cubeStudioBrowser ? file : (await asDataUrl(file)).split(',')[1], filename: file.name}
-      : currentCsv;
-    if (version !== importVersion) return;
-    currentCsv = source;
+      : csv.source;
+    if (version !== csv.version) return;
+    csv.source = source;
     const data = await (await api('/api/import', {file: source.file, filename: source.filename, column})).json();
-    if (version !== importVersion) return;
-    currentCsv = {...source, columns: data.columns, column: data.column};
+    if (version !== csv.version) return;
+    csv.source = {...source, columns: data.columns, column: data.column};
     if (!data.column || !data.names.length) {
-      csvNotice = data.column ? 'В выбранном столбце нет имён. Проверьте файл или выберите другой столбец.' : 'Выберите столбец с именами участников.';
+      csv.notice = data.column ? 'В выбранном столбце нет имён. Проверьте файл или выберите другой столбец.' : 'Выберите столбец с именами.';
       return;
     }
-    const sameRoster = state.csvFilename === source.filename && state.csvColumn === data.column;
-    replaceRegistrationNames(data.names, sameRoster);
-    state.csvFilename = source.filename;
-    state.csvColumn = data.column;
-    if (state.mode !== 'awards') state.page = 0;
-    csvNeedsReview = false;
-    if (data.skipped) csvNotice = 'Пустые имена пропущены (' + data.skipped + ').';
-    changed();
+    const sameRoster = state[csv.filenameKey] === source.filename && state[csv.columnKey] === data.column;
+    updateRoster(csv, data.names, sameRoster);
+    state[csv.filenameKey] = source.filename;
+    state[csv.columnKey] = data.column;
+    const visible = csv === activeCsv() && state.mode !== 'awards';
+    if (visible) state.page = 0;
+    csv.needsReview = false;
+    if (data.skipped) csv.notice = 'Пустые имена пропущены (' + data.skipped + ').';
+    changed({preview: visible});
   } catch (error) {
-    if (version === importVersion) csvNotice = error.message;
+    if (version === csv.version) csv.notice = error.message;
   } finally {
-    if (version === importVersion) {
-      importing = false;
+    if (version === csv.version) {
+      csv.importing = false;
       renderParticipants();
       renderPageInfo();
     }
@@ -339,13 +389,28 @@ async function loadCsv(file, column) {
 }
 
 function cancelImport() {
-  importVersion++;
-  importing = false;
-  csvNeedsReview = false;
-  csvNotice = '';
-  currentCsv = null;
+  const csv = activeCsv();
+  csv.version++;
+  csv.importing = false;
+  csv.needsReview = false;
+  csv.notice = '';
+  csv.source = null;
   renderParticipants();
   renderPageInfo();
+}
+
+function applyEditedNames(names) {
+  const csv = activeCsv();
+  if (csv.needsReview) cancelImport();
+  if (JSON.stringify(names) === JSON.stringify(state[csv.namesKey])) return;
+  csv.source = null;
+  csv.notice = '';
+  updateRoster(csv, names);
+  state[csv.filenameKey] = state[csv.columnKey] = '';
+  state.page = 0;
+  setError();
+  renderParticipants();
+  changed();
 }
 
 function wireDrop(target, handler) {
@@ -527,7 +592,7 @@ async function exportPdf() {
   const label = $('export').querySelector('span');
   label.textContent = 'Готовим PDF…';
   const base = state.title.trim().replace(/[<>:"/\\|?*\u0000-\u001f]/g, '_').slice(0, 95);
-  const filename = base + {'awards':' — призёры.pdf', 'badges':' — бейджи.pdf', 'participation':' — участие.pdf'}[state.mode];
+  const filename = base + {'awards':' — призёры.pdf', 'badges':' — бейджи.pdf', 'participation':' — участие.pdf', 'volunteers':' — волонтёры.pdf'}[state.mode];
   renderPageInfo();
   try {
     const response = await api('/api/export', documentPayload());
@@ -569,26 +634,17 @@ function bindControls() {
   wireDrop($('csv-drop'), (file) => void loadCsv(file));
   $('csv-column').addEventListener('change', () => { if ($('csv-column').value) void loadCsv(null, $('csv-column').value); });
   $('cancel-import').addEventListener('click', cancelImport);
+  $('use-badge-volunteers').addEventListener('click', () => {
+    applyEditedNames(state.volunteerNames.concat(newBadgeVolunteers()));
+  });
   $('edit-names').addEventListener('click', () => {
-    $('names-text').value = state.names.join('\n');
+    $('names-text').value = state[activeCsv().namesKey].join('\n');
     $('names-dialog').showModal();
     $('names-text').focus();
   });
   $('apply-names').addEventListener('click', () => {
     const names = $('names-text').value.split(/\r?\n/).map((name) => name.trim()).filter(Boolean);
-    if (csvNeedsReview) cancelImport();
-    if (JSON.stringify(names) !== JSON.stringify(state.names)) {
-      importVersion++;
-      importing = false;
-      currentCsv = null;
-      csvNotice = '';
-      replaceRegistrationNames(names);
-      state.csvFilename = state.csvColumn = '';
-      state.page = 0;
-      setError();
-      renderParticipants();
-      changed();
-    }
+    applyEditedNames(names);
     $('names-dialog').close();
   });
   $('toggle-events').addEventListener('click', () => setEvents(state.events.length === eventMap.size ? [] : Array.from(eventMap.keys())));
