@@ -117,7 +117,9 @@
         <div class="save-status" id="save-status" role="status"></div>
       </div>
       <section class="panel roster-panel" id="badge-roster" hidden aria-labelledby="badge-roster-title">
-        <div class="roster-heading"><h2 id="badge-roster-title" tabindex="-1">Список для бейджей</h2><span id="badge-roster-count" class="count-pill"></span></div>
+        <div class="roster-heading"><h2 id="badge-roster-title" tabindex="-1">Список для бейджей</h2><span id="badge-roster-count" class="count-pill"></span>
+          <button type="button" class="text-button" id="edit-badge-names" aria-haspopup="dialog" aria-controls="names-dialog">Вставить имена</button>
+        </div>
         <div class="roster-body">
           <input id="badge-search" type="search" placeholder="Найти по имени" aria-label="Найти человека по имени" autocomplete="off">
           <div id="badge-column-titles" class="badge-column-titles"><span>Имя на бейдже</span><span>Статус</span></div>

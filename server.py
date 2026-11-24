@@ -32,7 +32,7 @@ from registrations import inspect_registration_csv
 
 
 APP_DIR = Path(__file__).resolve().parent
-STUDIO_VERSION = "2.1"
+STUDIO_VERSION = "2.2"
 BADGE_DIMENSIONS = {"badgeWidth": 75, "badgeHeight": 100, "badgeMargin": 5, "badgeGap": 0}
 DEFAULTS = {
     "title": "Haileybury Astana Open 2026",

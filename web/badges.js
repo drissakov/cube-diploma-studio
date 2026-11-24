@@ -49,6 +49,24 @@ function fillBadgeRole(select, role) {
   select.dataset.role = role;
 }
 
+function replaceBadgeNames(names) {
+  const key = name => name.trim().normalize().toLowerCase();
+  const byName = new Map();
+  // Pop matching rows in their original order, including people with identical names.
+  for (let i = state.badgePeople.length - 1; i >= 0; i--) {
+    const person = state.badgePeople[i];
+    const name = key(person.name);
+    if (!byName.has(name)) byName.set(name, []);
+    byName.get(name).push(person);
+  }
+  state.badgePeople = names.map(name => {
+    const previous = byName.get(key(name))?.pop();
+    return previous ? {...previous, name} : {name, role: 'COMPETITOR'};
+  });
+  $('badge-search').value = '';
+  renderBadgeRows();
+}
+
 function focusBadgeSheet(index) {
   if (!badgeCapacity) return;
   const sheet = Math.floor(index / badgeCapacity);
@@ -66,7 +84,7 @@ function filterBadgeRows() {
     if (!row.hidden) visible++;
   }
   $('badge-empty').hidden = visible > 0;
-  $('badge-empty').textContent = state.badgePeople.length ? 'По этому имени никого не найдено.' : 'Загрузите список из CSV или добавьте человека вручную.';
+  $('badge-empty').textContent = state.badgePeople.length ? 'По этому имени никого не найдено.' : 'Вставьте имена списком, загрузите CSV или добавьте человека вручную.';
   $('badge-column-titles').hidden = !visible;
 }
 
@@ -101,6 +119,7 @@ function renderBadgeRows() {
   });
   $('badge-list').replaceChildren(fragment);
   $('badge-roster-count').textContent = String(state.badgePeople.length);
+  $('edit-badge-names').textContent = state.badgePeople.length ? 'Изменить список' : 'Вставить имена';
   $('badge-search').hidden = !state.badgePeople.length;
   filterBadgeRows();
 }

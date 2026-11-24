@@ -268,7 +268,7 @@ function renderModes() {
   document.querySelectorAll('.mode').forEach((node) => node.setAttribute('aria-pressed', String(node.dataset.mode === state.mode)));
   $('participant-panel').hidden = awards;
   $('roster-title').textContent = volunteers ? 'Волонтёры' : 'Участники';
-  $('names-dialog-title').textContent = volunteers ? 'Имена волонтёров' : 'Имена участников';
+  $('names-dialog-title').textContent = badges ? 'Имена для бейджей' : (volunteers ? 'Имена волонтёров' : 'Имена участников');
   $('use-badge-volunteers').hidden = !volunteers;
   $('event-panel').hidden = !awards;
   $('winners-panel').hidden = !awards;
@@ -299,6 +299,7 @@ function renderParticipants() {
   $('csv-notice').hidden = !csv.notice;
   $('csv-notice').textContent = csv.notice;
   $('cancel-import').hidden = !csv.needsReview;
+  $('edit-badge-names').disabled = registrationCsv.importing;
   if (volunteers) {
     const count = newBadgeVolunteers().length;
     const add = $('use-badge-volunteers');
@@ -402,11 +403,16 @@ function cancelImport() {
 function applyEditedNames(names) {
   const csv = activeCsv();
   if (csv.needsReview) cancelImport();
-  if (JSON.stringify(names) === JSON.stringify(state[csv.namesKey])) return;
-  csv.source = null;
-  csv.notice = '';
-  updateRoster(csv, names);
-  state[csv.filenameKey] = state[csv.columnKey] = '';
+  if (state.mode === 'badges') {
+    if (names.length === state.badgePeople.length && names.every((name, i) => name === state.badgePeople[i].name)) return;
+    replaceBadgeNames(names);
+  } else {
+    if (JSON.stringify(names) === JSON.stringify(state[csv.namesKey])) return;
+    csv.source = null;
+    csv.notice = '';
+    updateRoster(csv, names);
+    state[csv.filenameKey] = state[csv.columnKey] = '';
+  }
   state.page = 0;
   setError();
   renderParticipants();
@@ -637,11 +643,16 @@ function bindControls() {
   $('use-badge-volunteers').addEventListener('click', () => {
     applyEditedNames(state.volunteerNames.concat(newBadgeVolunteers()));
   });
-  $('edit-names').addEventListener('click', () => {
-    $('names-text').value = state[activeCsv().namesKey].join('\n');
+  function openNamesDialog() {
+    const badges = state.mode === 'badges';
+    const names = badges ? state.badgePeople.map(person => person.name) : state[activeCsv().namesKey];
+    $('names-text').value = names.join('\n');
     $('names-dialog').showModal();
     $('names-text').focus();
-  });
+    if (badges) $('names-text').select();
+  }
+  $('edit-names').addEventListener('click', openNamesDialog);
+  $('edit-badge-names').addEventListener('click', openNamesDialog);
   $('apply-names').addEventListener('click', () => {
     const names = $('names-text').value.split(/\r?\n/).map((name) => name.trim()).filter(Boolean);
     applyEditedNames(names);

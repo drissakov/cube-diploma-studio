@@ -188,6 +188,7 @@ dialog::backdrop { background: #232a3e77 }
 .badges-mode .preview-footer { padding-inline: 13px }
 .badges-mode .file-icon { display: none }
 .badges-mode .csv-drop { min-height: 90px }
+.badges-mode .participant-line { display: none }
 .measure-pair, .badge-entry { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px }
 .field-note { margin-top: -7px; line-height: 1.35 }
 .print-options summary { padding: 3px 0; border-radius: 0; color: var(--accent-dark); font-size: 12px; font-weight: 600 }
@@ -195,7 +196,8 @@ dialog::backdrop { background: #232a3e77 }
 .print-options .measure-pair { margin-top: 8px }
 #badge-layout-info { padding: 8px 9px; border-radius: 5px; background: #f0f3fa; color: #475878; font-weight: 600 }
 #badge-layout-info.invalid { color: #883b38; background: #fcf0ef }
-.roster-heading { display: flex; align-items: center; gap: 9px; padding: 17px 16px 13px }
+.roster-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; padding: 17px 16px 13px }
+.roster-heading .text-button { margin-inline-start: auto }
 .roster-heading h2 { font-size: 17px; font-weight: 650; letter-spacing: -.35px }
 .count-pill { padding: 2px 7px; color: #526187; background: #eef1f8; border-radius: 6px; font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 650 }
 .roster-body { padding: 0 14px 15px }
