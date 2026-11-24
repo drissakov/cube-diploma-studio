@@ -155,7 +155,10 @@
   </main>
   <dialog id="names-dialog" aria-labelledby="names-dialog-title">
     <div class="dialog-heading"><h2 id="names-dialog-title">Имена участников</h2><button type="button" class="icon-button" data-close="names-dialog" aria-label="Закрыть"><svg class="ico"><use href="#i-close"/></svg></button></div>
-    <div class="dialog-body"><label>По одному имени на строке<textarea id="names-text" rows="12" spellcheck="false" placeholder="Имя Фамилия"></textarea></label></div>
+    <div class="dialog-body fields">
+      <label>По одному имени на строке<textarea id="names-text" rows="12" spellcheck="false" placeholder="Имя Фамилия"></textarea></label>
+      <label id="badge-bulk-role-field" hidden>Статус для новых бейджей<select id="badge-bulk-role"></select></label>
+    </div>
     <div class="dialog-actions"><button type="button" class="secondary" data-close="names-dialog">Отмена</button><button type="button" class="primary" id="apply-names">Применить</button></div>
   </dialog>
   <dialog id="zoom-dialog" aria-labelledby="zoom-title"><div class="dialog-heading"><h2 id="zoom-title">Предпросмотр</h2><button type="button" class="icon-button" data-close="zoom-dialog" aria-label="Закрыть"><svg class="ico"><use href="#i-close"/></svg></button></div><div class="zoom-stage"><img id="zoom-img" alt="Увеличенная страница диплома"></div></dialog>

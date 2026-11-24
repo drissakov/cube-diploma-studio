@@ -49,7 +49,7 @@ function fillBadgeRole(select, role) {
   select.dataset.role = role;
 }
 
-function replaceBadgeNames(names) {
+function replaceBadgeNames(names, newRole = 'COMPETITOR') {
   const key = name => name.trim().normalize().toLowerCase();
   const byName = new Map();
   // Pop matching rows in their original order, including people with identical names.
@@ -61,7 +61,7 @@ function replaceBadgeNames(names) {
   }
   state.badgePeople = names.map(name => {
     const previous = byName.get(key(name))?.pop();
-    return previous ? {...previous, name} : {name, role: 'COMPETITOR'};
+    return previous ? {...previous, name} : {name, role: newRole};
   });
   $('badge-search').value = '';
   renderBadgeRows();
@@ -182,8 +182,10 @@ function bindBadgeControls() {
   $('badge-url').value = state.badgeUrl;
   $('badge-url').addEventListener('input', () => { state.badgeUrl = $('badge-url').value; changed(); });
   $('badge-search').addEventListener('input', filterBadgeRows);
-  fillBadgeRole($('badge-new-role'), 'COMPETITOR');
-  $('badge-new-role').addEventListener('change', () => { $('badge-new-role').dataset.role = $('badge-new-role').value; });
+  for (const select of [$('badge-new-role'), $('badge-bulk-role')]) {
+    fillBadgeRole(select, 'COMPETITOR');
+    select.addEventListener('change', () => { select.dataset.role = select.value; });
+  }
   $('badge-new').addEventListener('submit', event => {
     event.preventDefault();
     const name = $('badge-new-name').value.trim();

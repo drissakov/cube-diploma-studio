@@ -405,7 +405,7 @@ function applyEditedNames(names) {
   if (csv.needsReview) cancelImport();
   if (state.mode === 'badges') {
     if (names.length === state.badgePeople.length && names.every((name, i) => name === state.badgePeople[i].name)) return;
-    replaceBadgeNames(names);
+    replaceBadgeNames(names, $('badge-bulk-role').value);
   } else {
     if (JSON.stringify(names) === JSON.stringify(state[csv.namesKey])) return;
     csv.source = null;
@@ -647,6 +647,12 @@ function bindControls() {
     const badges = state.mode === 'badges';
     const names = badges ? state.badgePeople.map(person => person.name) : state[activeCsv().namesKey];
     $('names-text').value = names.join('\n');
+    $('badge-bulk-role-field').hidden = !badges;
+    if (badges) {
+      const select = $('badge-bulk-role');
+      select.value = 'COMPETITOR';
+      select.dataset.role = select.value;
+    }
     $('names-dialog').showModal();
     $('names-text').focus();
     if (badges) $('names-text').select();
