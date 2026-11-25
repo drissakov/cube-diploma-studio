@@ -68,18 +68,26 @@
         </details>
         <details open class="panel" id="participant-panel">
           <summary><span class="summary-title"><svg class="ico"><use href="#i-people"/></svg><span id="roster-title">Участники</span></span><svg class="ico chevron"><use href="#i-down"/></svg></summary>
-          <div class="panel-body">
-            <button type="button" id="csv-drop" class="drop-target csv-drop">
-              <span class="upload-disc"><svg class="ico"><use href="#i-upload"/></svg></span>
-              <span class="drop-title" id="csv-title">Загрузить CSV</span>
-              <span class="drop-subtitle" id="csv-description">Выберите файл или перетащите его сюда</span>
-            </button>
-            <input id="csv-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values" hidden>
-            <label id="column-wrap" class="column-select" hidden>Столбец с именами<select id="csv-column"></select></label>
-            <p id="csv-notice" class="csv-notice" role="status" hidden></p>
-            <button type="button" class="text-button cancel-import" id="cancel-import" hidden>Отменить импорт</button>
-            <div class="participant-line"><span id="names-count" class="small muted">Список пуст</span><button type="button" class="text-button" id="edit-names">Ввести имена</button></div>
-            <button type="button" class="secondary add" id="use-badge-volunteers" hidden><svg class="ico"><use href="#i-plus"/></svg><span>Добавить волонтёров из бейджей</span></button>
+          <div class="panel-body fields">
+            <label class="blank-toggle"><input type="checkbox" id="blank-mode" aria-controls="blank-options named-controls">Печатать без имён</label>
+            <div id="blank-options" class="fields" hidden>
+              <label><span id="blank-count-label">Количество сертификатов</span><input type="number" id="blank-count" min="1" max="500" step="1" inputmode="numeric" placeholder="От 1 до 500" value="1" aria-describedby="blank-count-error"></label>
+              <p class="small" id="blank-count-error" role="status" hidden>Введите целое число от 1 до 500.</p>
+              <label id="blank-role-field" hidden>Статус на бейджах<select id="blank-role"></select></label>
+            </div>
+            <div id="named-controls">
+              <button type="button" id="csv-drop" class="drop-target csv-drop">
+                <span class="upload-disc"><svg class="ico"><use href="#i-upload"/></svg></span>
+                <span class="drop-title" id="csv-title">Загрузить CSV</span>
+                <span class="drop-subtitle" id="csv-description">Выберите файл или перетащите его сюда</span>
+              </button>
+              <input id="csv-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values" hidden>
+              <label id="column-wrap" class="column-select" hidden>Столбец с именами<select id="csv-column"></select></label>
+              <p id="csv-notice" class="csv-notice" role="status" hidden></p>
+              <button type="button" class="text-button cancel-import" id="cancel-import" hidden>Отменить импорт</button>
+              <div class="participant-line"><span id="names-count" class="small muted">Список пуст</span><button type="button" class="text-button" id="edit-names">Ввести имена</button></div>
+              <button type="button" class="secondary add" id="use-badge-volunteers" hidden><svg class="ico"><use href="#i-plus"/></svg><span>Добавить волонтёров из бейджей</span></button>
+            </div>
           </div>
         </details>
         <details open class="panel" id="badge-print-panel" hidden>

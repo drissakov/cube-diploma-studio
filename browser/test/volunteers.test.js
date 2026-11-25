@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
 import test from 'node:test';
-import {getDocument} from 'pdfjs-dist/legacy/build/pdf.mjs';
 import {certificatePdf} from '../src/certificates.js';
+import {serveAssets, pdfPages} from './pdf-helpers.js';
 
 const state = {
   mode: 'volunteers',
@@ -12,29 +11,6 @@ const state = {
   names: ['Алия Нұр', 'Тимур Кәрім', 'Алия Нұр'],
 };
 const caption = 'has volunteered at this competition';
-
-function serveAssets(t) {
-  t.mock.method(globalThis, 'fetch', async (path) => {
-    const source = path.startsWith('/fonts/') ? '../public' + path : '../..' + path;
-    return new Response(await readFile(new URL(source, import.meta.url)));
-  });
-}
-
-async function pdfPages(bytes) {
-  const task = getDocument({data: bytes, isEvalSupported: false});
-  const pdf = await task.promise;
-  try {
-    const pages = [];
-    for (let index = 1; index <= pdf.numPages; index++) {
-      const page = await pdf.getPage(index);
-      const content = await page.getTextContent();
-      pages.push(content.items.map(item => item.str).join(' ').replace(/\s+/g, ' '));
-    }
-    return pages;
-  } finally {
-    await task.destroy();
-  }
-}
 
 test('volunteer PDF issues one correctly worded certificate per roster row in order', async (t) => {
   serveAssets(t);

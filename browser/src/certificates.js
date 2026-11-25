@@ -1,4 +1,5 @@
 import { PDFDocument } from 'pdf-lib';
+import { blankCopies } from './blanks.js';
 import { events } from './catalog.js';
 import { assetBytes, createFonts, pdfColor } from './fonts.js';
 
@@ -12,10 +13,14 @@ const span = (text, color = ink) => ({ text, color });
 function pagesFor(state, preview) {
   let pages;
   if (state.mode === 'participation' || state.mode === 'volunteers') {
-    pages = (state.names || []).map((name) => ({ name: clean(name) }));
-    if (!pages.length && preview) pages.push({ name: '' });
-    if (!pages.length) throw new Error('Добавьте имена в список или загрузите CSV.');
-    if (!preview && pages.some((page) => !page.name)) throw new Error('В списке есть пустое имя.');
+    if (state.blankMode === true) {
+      pages = blankCopies(state.blankCount);
+    } else {
+      pages = (state.names || []).map((name) => ({ name: clean(name) }));
+      if (!pages.length && preview) pages.push({ name: '' });
+      if (!pages.length) throw new Error('Добавьте имена в список или загрузите CSV.');
+      if (!preview && pages.some((page) => !page.name)) throw new Error('В списке есть пустое имя.');
+    }
   } else if (state.mode === 'awards') {
     const ids = [...new Set(state.events || [])];
     if (!ids.length && preview) ids.push('333');
@@ -29,9 +34,9 @@ function pagesFor(state, preview) {
     });
   } else throw new Error('Выберите тип документа.');
   if (!preview) return pages;
-  const current = pages[state.page ?? 0];
-  if (!current) throw new Error('Страница отсутствует.');
-  return [current];
+  const index = state.page ?? 0;
+  if (!Number.isInteger(index) || index < 0 || index >= pages.length) throw new Error('Страница отсутствует.');
+  return [pages[index]];
 }
 
 function nameList(group) {

@@ -57,6 +57,9 @@ summary:hover { background: #fafbfe }
 details[open] > summary .chevron { transform: rotate(0) }
 .panel-body { padding: 1px 19px 18px }
 .fields { display: grid; gap: 12px }
+.blank-toggle { display: flex; align-items: center; gap: 8px; width: fit-content; padding-block: 3px; cursor: pointer; font-size: 13px }
+.blank-toggle input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent) }
+#blank-count-error { margin-top: -7px; color: #8d2837 }
 label { display: grid; gap: 6px; font-size: 12px; font-weight: 600; color: #485165 }
 input:not([type=checkbox]), select, textarea { width: 100%; padding: 9px 10px; border: 1px solid #cfd5df; border-radius: 6px; background: #fff; font-size: 13px; font-weight: 400; color: #232c3c }
 input::placeholder, textarea::placeholder { color: #8490a1 }
@@ -184,7 +187,7 @@ dialog::backdrop { background: #232a3e77 }
 .roster-panel { grid-area: people; overflow: hidden }
 .badges-mode .preview-panel { grid-area: preview }
 .badges-mode .preview-stage { padding: clamp(12px,1.2vw,20px) }
-.badges-mode .paper { width: auto; max-width: 100%; max-height: max(280px,calc(100vh - 412px)) }
+.badge-sheets .paper { width: auto; max-width: 100%; max-height: max(280px,calc(100vh - 412px)) }
 .badges-mode .preview-footer { padding-inline: 13px }
 .badges-mode .file-icon { display: none }
 .badges-mode .csv-drop { min-height: 90px }
@@ -231,7 +234,7 @@ select[data-role="VOLUNTEER"] { border-color: #ecd3bd; background-color: #fff3e8
 }
 @media (max-width: 730px) {
   .badges-mode .workspace { grid-template-columns: minmax(0,1fr); grid-template-areas: "settings" "people" "preview" }
-  .badges-mode .paper { max-height: min(78vh,680px) }
+  .badge-sheets .paper { max-height: min(78vh,680px) }
   .badge-list { max-height: 330px }
 }
 @media (max-width: 360px) {

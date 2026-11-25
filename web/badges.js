@@ -40,7 +40,7 @@ function replaceRegistrationNames(names, preserveImportedEdits = true) {
   state.names = names;
   state.badgePeople = names.map(name => byName.get(name)?.pop() || {name, role: 'COMPETITOR', sourceName: name}).concat(manual);
   $('badge-search').value = '';
-  if (state.mode === 'badges') renderBadgeRows();
+  if (state.mode === 'badges' && !blankMode()) renderBadgeRows();
 }
 
 function fillBadgeRole(select, role) {
@@ -186,6 +186,13 @@ function bindBadgeControls() {
     fillBadgeRole(select, 'COMPETITOR');
     select.addEventListener('change', () => { select.dataset.role = select.value; });
   }
+  const blankRole = $('blank-role');
+  fillBadgeRole(blankRole, state.blankRole);
+  blankRole.addEventListener('change', () => {
+    state.blankRole = blankRole.value;
+    blankRole.dataset.role = blankRole.value;
+    changed();
+  });
   $('badge-new').addEventListener('submit', event => {
     event.preventDefault();
     const name = $('badge-new-name').value.trim();

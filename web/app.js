@@ -85,10 +85,18 @@ async function api(path, body, options = {}) {
 function stateFrom(initial, draft) {
   const merged = Object.assign({}, initial || {}, draft || {});
   const names = Array.isArray(merged.names) ? merged.names.map(String) : [];
+  const blankForms = {};
+  for (const mode of ['participation', 'volunteers', 'badges']) {
+    const saved = merged.blankForms?.[mode];
+    blankForms[mode] = {enabled: saved?.enabled === true,
+      count: saved?.count === null || Number.isFinite(saved?.count) ? saved.count : 1};
+  }
   return {
     mode: ['awards', 'badges', 'volunteers'].includes(merged.mode) ? merged.mode : 'participation',
     title: String(merged.title ?? ''),
     date: String(merged.date ?? ''),
+    blankForms,
+    blankRole: badgeRoles.includes(merged.blankRole) ? merged.blankRole : 'COMPETITOR',
     organizers: (Array.isArray(merged.organizers) ? merged.organizers : []).slice(0, 5).map((o) => ({
       name: String(o.name ?? ''), role: o.role === 'wca' ? 'wca' : 'organizer', signature: o.signature || ''
     })),
@@ -113,19 +121,39 @@ function updateRoster(csv, names, preserveImportedEdits = true) {
   else replaceRegistrationNames(names, preserveImportedEdits);
 }
 
+function blankMode() {
+  return state.blankForms[state.mode]?.enabled === true;
+}
+
+function blankCount() {
+  const count = state.blankForms[state.mode]?.count;
+  return Number.isInteger(count) && count >= 1 && count <= 500 ? count : 0;
+}
+
+function badgeCount() {
+  return blankMode() ? blankCount() : state.badgePeople.length;
+}
+
 function pageCount() {
-  if (state.mode === 'badges') return badgeCapacity ? Math.ceil(state.badgePeople.length / badgeCapacity) : 0;
-  return state.mode === 'awards' ? state.events.length * 3 : state[activeCsv().namesKey].length;
+  if (state.mode === 'badges') return badgeCapacity ? Math.ceil(badgeCount() / badgeCapacity) : 0;
+  if (state.mode === 'awards') return state.events.length * 3;
+  return blankMode() ? blankCount() : state[activeCsv().namesKey].length;
 }
 
 function documentPayload() {
-  if (state.mode === 'volunteers') return {mode: state.mode, title: state.title, date: state.date,
-    organizers: state.organizers, names: state.volunteerNames, page: state.page};
-  if (state.mode !== 'badges') return state;
-  const data = {mode: state.mode, title: state.title, date: state.date, page: state.page,
-    badgeUrl: state.badgeUrl, badgePeople: state.badgePeople.map(({name, role}) => ({name, role}))};
-  for (const [key] of badgeMeasures) data[key] = state[key];
-  return data;
+  const data = {mode: state.mode, title: state.title, date: state.date, page: state.page};
+  const blank = blankMode();
+  if (blank) Object.assign(data, {blankMode: true, blankCount: blankCount()});
+  if (state.mode === 'badges') {
+    data.badgeUrl = state.badgeUrl;
+    data.badgePeople = blank ? [] : state.badgePeople.map(({name, role}) => ({name, role}));
+    if (blank) data.blankRole = state.blankRole;
+    for (const [key] of badgeMeasures) data[key] = state[key];
+    return data;
+  }
+  data.organizers = state.organizers;
+  if (state.mode === 'awards') return {...data, events: state.events, winners: state.winners, results: state.results};
+  return {...data, names: blank ? [] : state[activeCsv().namesKey]};
 }
 
 function markSaved(message, check = false) {
@@ -162,6 +190,7 @@ function changed({preview = true} = {}) {
 
 function renderPageInfo() {
   const badges = state.mode === 'badges';
+  const blank = blankMode();
   const total = pageCount();
   if (!badges || badgeCapacity) state.page = Math.max(0, Math.min(state.page, Math.max(0, total - 1)));
   $('page').value = String(total ? state.page + 1 : 1);
@@ -174,11 +203,11 @@ function renderPageInfo() {
   let detail = 'Альбомный формат';
   if (badges) {
     const first = state.page * badgeCapacity + 1;
-    const last = Math.min(first + badgeCapacity - 1, state.badgePeople.length);
+    const last = Math.min(first + badgeCapacity - 1, badgeCount());
     context = total ? (first === last ? 'Бейдж ' + first : 'Бейджи ' + first + '–' + last) : 'Образец бейджа';
     detail = 'A4 · печать 100%';
   } else if (total && state.mode !== 'awards') {
-    context = state[activeCsv().namesKey][state.page];
+    context = blank ? 'Бланк без имени' : state[activeCsv().namesKey][state.page];
     detail = state.mode === 'volunteers' ? 'Сертификат волонтёра' : 'Сертификат участника';
   } else if (total) {
     const id = state.events[Math.floor(state.page / 3)];
@@ -189,13 +218,17 @@ function renderPageInfo() {
   $('page-context').textContent = context;
   $('page-detail').textContent = detail;
   const csv = activeCsv();
-  const reviewingCsv = state.mode !== 'awards' && (csv.importing || csv.needsReview);
+  const reviewingCsv = !blank && state.mode !== 'awards' && (csv.importing || csv.needsReview);
   $('export-count').textContent = total
     ? total + ' ' + plural(total, 'страница', 'страницы', 'страниц') + ' в одном файле'
     : ({awards: 'Выберите дисциплины', volunteers: 'Добавьте волонтёров'}[state.mode] || 'Добавьте участников');
-  const emptyBadgeName = badges && state.badgePeople.some(person => !person.name.trim());
-  if (badges && total) $('export-count').textContent = state.badgePeople.length + ' ' + plural(state.badgePeople.length, 'бейдж', 'бейджа', 'бейджей') + ' · ' + total + ' ' + plural(total, 'лист', 'листа', 'листов') + ' A4';
+  const emptyBadgeName = badges && !blank && state.badgePeople.some(person => !person.name.trim());
+  if (badges && total) $('export-count').textContent = badgeCount() + ' ' + plural(badgeCount(), 'бейдж', 'бейджа', 'бейджей') + ' · ' + total + ' ' + plural(total, 'лист', 'листа', 'листов') + ' A4';
   if (badges && !badgeCapacity) $('export-count').textContent = 'Проверьте размеры бейджа';
+  const invalidCount = blank && !blankCount();
+  $('blank-count-error').hidden = !invalidCount;
+  $('blank-count').setAttribute('aria-invalid', String(invalidCount));
+  if (invalidCount) $('export-count').textContent = 'Проверьте количество бланков';
   if (emptyBadgeName) $('export-count').textContent = 'Заполните пустое имя в списке';
   if (reviewingCsv) $('export-count').textContent = csv.importing ? 'Читаем CSV…' : 'Проверьте импорт имён';
   const readingSignature = !badges && pendingSignatures.size > 0;
@@ -213,11 +246,15 @@ function requestPreview() {
     hidePreview('Заполните название и дату соревнования.');
     return;
   }
+  if (blankMode() && !blankCount()) {
+    hidePreview('Введите количество бланков от 1 до 500.');
+    return;
+  }
   if (state.mode === 'badges' && !badgeCapacity) {
     hidePreview(layoutNote || 'Рассчитываем раскладку…');
     return;
   }
-  if (state.mode === 'badges' && state.badgePeople.some(person => !person.name.trim())) {
+  if (state.mode === 'badges' && !blankMode() && state.badgePeople.some(person => !person.name.trim())) {
     hidePreview('Заполните пустое имя в списке или удалите эту строку.');
     return;
   }
@@ -263,10 +300,18 @@ function renderModes() {
   const awards = state.mode === 'awards';
   const badges = state.mode === 'badges';
   const volunteers = state.mode === 'volunteers';
-  document.body.classList.toggle('badges-mode', badges);
+  const blank = blankMode();
+  document.body.classList.toggle('badges-mode', badges && !blank);
+  document.body.classList.toggle('badge-sheets', badges);
   document.querySelector('h1').textContent = badges ? 'Редактор бейджей' : 'Редактор дипломов';
   document.querySelectorAll('.mode').forEach((node) => node.setAttribute('aria-pressed', String(node.dataset.mode === state.mode)));
   $('participant-panel').hidden = awards;
+  $('blank-mode').checked = blank;
+  $('blank-options').hidden = !blank;
+  $('blank-count').value = state.blankForms[state.mode]?.count ?? '';
+  $('blank-count-label').textContent = badges ? 'Количество бейджей' : 'Количество сертификатов';
+  $('blank-role-field').hidden = !badges;
+  $('named-controls').hidden = blank;
   $('roster-title').textContent = volunteers ? 'Волонтёры' : 'Участники';
   $('names-dialog-title').textContent = badges ? 'Имена для бейджей' : (volunteers ? 'Имена волонтёров' : 'Имена участников');
   $('use-badge-volunteers').hidden = !volunteers;
@@ -274,12 +319,12 @@ function renderModes() {
   $('winners-panel').hidden = !awards;
   $('organizer-panel').hidden = badges;
   $('badge-print-panel').hidden = !badges;
-  $('badge-roster').hidden = !badges;
+  $('badge-roster').hidden = !badges || blank;
   $('edit-names').hidden = badges;
   $('preview-title').textContent = {badges: 'Печатный лист A4', awards: 'Диплом призёра',
     participation: 'Сертификат участника', volunteers: 'Сертификат волонтёра'}[state.mode];
   if (badges) {
-    renderBadgeRows();
+    if (!blank) renderBadgeRows();
     invalidateLayout();
   }
   renderParticipants();
@@ -373,7 +418,7 @@ async function loadCsv(file, column) {
     updateRoster(csv, data.names, sameRoster);
     state[csv.filenameKey] = source.filename;
     state[csv.columnKey] = data.column;
-    const visible = csv === activeCsv() && state.mode !== 'awards';
+    const visible = csv === activeCsv() && state.mode !== 'awards' && !blankMode();
     if (visible) state.page = 0;
     csv.needsReview = false;
     if (data.skipped) csv.notice = 'Пустые имена пропущены (' + data.skipped + ').';
@@ -598,7 +643,8 @@ async function exportPdf() {
   const label = $('export').querySelector('span');
   label.textContent = 'Готовим PDF…';
   const base = state.title.trim().replace(/[<>:"/\\|?*\u0000-\u001f]/g, '_').slice(0, 95);
-  const filename = base + {'awards':' — призёры.pdf', 'badges':' — бейджи.pdf', 'participation':' — участие.pdf', 'volunteers':' — волонтёры.pdf'}[state.mode];
+  const type = {awards:'призёры', badges:'бейджи', participation:'участие', volunteers:'волонтёры'}[state.mode];
+  const filename = base + ' — ' + type + (blankMode() ? ' без имён' : '') + '.pdf';
   renderPageInfo();
   try {
     const response = await api('/api/export', documentPayload());
@@ -621,6 +667,19 @@ async function exportPdf() {
 
 function bindControls() {
   bindBadgeControls();
+  $('blank-mode').addEventListener('change', () => {
+    state.blankForms[state.mode].enabled = $('blank-mode').checked;
+    state.page = 0;
+    setError();
+    hidePreview('Готовим предпросмотр…');
+    renderModes();
+    changed();
+  });
+  $('blank-count').addEventListener('input', () => {
+    const count = $('blank-count').valueAsNumber;
+    state.blankForms[state.mode].count = Number.isFinite(count) ? count : null;
+    changed();
+  });
   $('title').value = state.title;
   $('date').value = state.date;
   for (const key of ['title', 'date']) $(key).addEventListener('input', () => { state[key] = $(key).value; changed(); });

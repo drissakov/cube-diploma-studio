@@ -32,7 +32,7 @@ from registrations import inspect_registration_csv
 
 
 APP_DIR = Path(__file__).resolve().parent
-STUDIO_VERSION = "2.3"
+STUDIO_VERSION = "2.4"
 BADGE_DIMENSIONS = {"badgeWidth": 75, "badgeHeight": 100, "badgeMargin": 5, "badgeGap": 0}
 DEFAULTS = {
     "title": "Haileybury Astana Open 2026",
@@ -124,6 +124,31 @@ def competition_details(data, preview):
     return {"title": title or "Competition", "date": date or "—"}
 
 
+def blank_copies(data, **fields):
+    count = data.get("blankCount", 1)
+    if type(count) is not int or not 1 <= count <= 500:
+        raise ValueError("Введите количество бланков целым числом от 1 до 500.")
+    return [{**fields, "name": ""} for _ in range(count)]
+
+
+def certificate_pages(data, preview):
+    kind = "volunteer" if data["mode"] == "volunteers" else "participation"
+    if data.get("blankMode") is True:
+        return blank_copies(data, kind=kind)
+    roster = "волонтёров" if kind == "volunteer" else "участников"
+    names = data.get("names", [])
+    if not isinstance(names, list):
+        raise ValueError(f"Проверьте список {roster}.")
+    pages = [{"kind": kind, "name": short_text(name)} for name in names]
+    if any(not page["name"] for page in pages):
+        raise ValueError(f"В списке {roster} есть пустое имя.")
+    if not pages:
+        if not preview:
+            raise ValueError(f"Добавьте имена {roster} вручную или загрузите CSV.")
+        pages = [{"kind": kind, "name": ""}]
+    return pages
+
+
 def prepare_document(data, preview):
     settings = competition_details(data, preview)
     people = data.get("organizers", [])
@@ -143,18 +168,7 @@ def prepare_document(data, preview):
     settings["organizers"] = organizers
     mode = data.get("mode")
     if mode in ("participation", "volunteers"):
-        kind = "volunteer" if mode == "volunteers" else "participation"
-        roster = "волонтёров" if mode == "volunteers" else "участников"
-        names = data.get("names", [])
-        if not isinstance(names, list):
-            raise ValueError(f"Проверьте список {roster}.")
-        pages = [{"kind": kind, "name": short_text(name)} for name in names]
-        if any(not page["name"] for page in pages):
-            raise ValueError(f"В списке {roster} есть пустое имя.")
-        if not pages:
-            if not preview:
-                raise ValueError(f"Добавьте имена {roster} вручную или загрузите CSV.")
-            pages = [{"kind": kind, "name": ""}]
+        pages = certificate_pages(data, preview)
     elif mode == "awards":
         ids = data.get("events", [])
         if not isinstance(ids, list) or any(not isinstance(key, str) or key not in EVENTS for key in ids):
@@ -207,8 +221,15 @@ def badge_link(value):
     return url
 
 
-def make_badges(data, preview):
-    settings = competition_details(data, preview)
+def badge_role(role):
+    if not isinstance(role, str) or role not in ROLE_COLORS:
+        raise ValueError("Выберите один из пяти статусов для бейджа.")
+    return role
+
+
+def badge_people(data, preview):
+    if data.get("blankMode") is True:
+        return blank_copies(data, role=badge_role(data.get("blankRole", "COMPETITOR")))
     source = data.get("badgePeople", [])
     if not isinstance(source, list):
         raise ValueError("Проверьте список людей для бейджей.")
@@ -217,9 +238,7 @@ def make_badges(data, preview):
         if not isinstance(entry, dict):
             raise ValueError("Проверьте строку в списке людей.")
         name = short_text(entry.get("name", ""))
-        role = entry.get("role", "COMPETITOR")
-        if not isinstance(role, str) or role not in ROLE_COLORS:
-            raise ValueError("Выберите один из пяти статусов для каждого человека.")
+        role = badge_role(entry.get("role", "COMPETITOR"))
         if not name and not preview:
             raise ValueError("В списке бейджей есть пустое имя. Заполните или удалите строку.")
         people.append({"name": name or "Имя Фамилия", "role": role})
@@ -227,6 +246,12 @@ def make_badges(data, preview):
         if not preview:
             raise ValueError("Добавьте человека вручную или загрузите CSV для бейджей.")
         people.append({"name": "Имя Фамилия", "role": "COMPETITOR"})
+    return people
+
+
+def make_badges(data, preview):
+    settings = competition_details(data, preview)
+    people = badge_people(data, preview)
     page = data.get("page", 0) if preview else None
     if preview and (type(page) is not int or page < 0):
         raise ValueError("Выберите существующий лист.")

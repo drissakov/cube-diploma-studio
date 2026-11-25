@@ -4,6 +4,7 @@ import {
   popGraphicsState, pushGraphicsState, rectangle, rgb, setFillingRgbColor,
 } from 'pdf-lib';
 import QRCode from 'qrcode';
+import { blankCopies } from './blanks.js';
 import { assetBytes, createFonts, pdfColor } from './fonts.js';
 import { badgeLayout, positions } from './packing.js';
 export { layoutInfo } from './packing.js';
@@ -85,6 +86,7 @@ function ribbon(page, x, y, width, height, slant, color) {
 }
 
 function nameBlock(page, fonts, name, x, bottom, width, height, maxSize) {
+  if (!name) return;
   const space = fonts.measure(' ', 'BadgeName', 1);
   const groups = name.replace(/ \(/g, '\n(').split('\n').map(group =>
     group.split(' ').filter(Boolean).map(word => ({ word, advance: fonts.measure(word, 'BadgeName', 1) })));
@@ -166,15 +168,19 @@ function drawBadge(page, resources, person) {
   }
 }
 
-export async function badgesPdf(state, preview = false) {
-  const title = text(state.title ?? ''), date = text(state.date ?? '');
-  if (!title || !date) throw new Error('Укажите название и дату соревнований.');
-  const layout = badgeLayout(state);
+function badgeRole(role = 'COMPETITOR') {
+  if (typeof role !== 'string' || !Object.hasOwn(roleColors, role)) {
+    throw new Error('Выберите один из пяти статусов для бейджа.');
+  }
+  return role;
+}
+
+function badgePeople(state, preview) {
+  if (state.blankMode === true) return blankCopies(state.blankCount, { role: badgeRole(state.blankRole) });
   const source = state.badgePeople ?? [];
   if (!Array.isArray(source)) throw new Error('Проверьте список людей для бейджей.');
   const people = source.map(person => {
-    const name = text(person?.name ?? ''), role = person?.role ?? 'COMPETITOR';
-    if (!Object.hasOwn(roleColors, role)) throw new Error('Выберите один из пяти статусов для каждого человека.');
+    const name = text(person?.name ?? ''), role = badgeRole(person?.role ?? 'COMPETITOR');
     if (!name && !preview) throw new Error('В списке бейджей есть пустое имя. Заполните или удалите строку.');
     return { name: name || 'Имя Фамилия', role };
   });
@@ -182,6 +188,14 @@ export async function badgesPdf(state, preview = false) {
     if (!preview) throw new Error('Добавьте человека вручную или загрузите CSV для бейджей.');
     people.push({ name: 'Имя Фамилия', role: 'COMPETITOR' });
   }
+  return people;
+}
+
+export async function badgesPdf(state, preview = false) {
+  const title = text(state.title ?? ''), date = text(state.date ?? '');
+  if (!title || !date) throw new Error('Укажите название и дату соревнований.');
+  const layout = badgeLayout(state);
+  const people = badgePeople(state, preview);
   const pageCount = Math.ceil(people.length / layout.count);
   const first = preview ? (state.page ?? 0) : 0;
   if (!Number.isInteger(first) || first < 0 || first >= pageCount) throw new Error('Лист отсутствует.');
